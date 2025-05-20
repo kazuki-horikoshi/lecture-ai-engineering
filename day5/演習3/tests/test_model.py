@@ -20,6 +20,7 @@ MODEL_DIR = os.path.join(os.path.dirname(__file__), "../models")
 MODEL_PATH = os.path.join(MODEL_DIR, "titanic_model.pkl")
 BASELINE_PATH = os.path.join(MODEL_DIR, "baseline.json")
 
+
 @pytest.fixture
 def sample_data():
     """テスト用データセットを読み込む"""
@@ -174,17 +175,22 @@ def test_model_reproducibility(sample_data, preprocessor):
         predictions1, predictions2
     ), "モデルの予測結果に再現性がありません"
 
+
 def load_baseline_accuracy():
     if os.path.exists(BASELINE_PATH):
         with open(BASELINE_PATH) as f:
             return json.load(f)["accuracy"]
-    return 0.75  # fallback値
+    return 0.75  # fallback value
+
 
 def test_model_accuracy_against_baseline(train_model):
     model, X_test, y_test = train_model
     accuracy = accuracy_score(y_test, model.predict(X_test))
     baseline = load_baseline_accuracy()
-    assert accuracy >= baseline, f"Accuracy {accuracy:.3f} is below baseline {baseline:.3f}"
+    assert (
+        accuracy >= baseline
+    ), f"Accuracy {accuracy:.3f} is below baseline {baseline:.3f}"
+
 
 def test_model_file_size():
     """モデルファイルのサイズを確認"""

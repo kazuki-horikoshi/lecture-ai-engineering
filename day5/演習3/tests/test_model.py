@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 import pickle
 import time
+import json
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
@@ -16,7 +18,7 @@ from sklearn.pipeline import Pipeline
 DATA_PATH = os.path.join(os.path.dirname(__file__), "../data/Titanic.csv")
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "../models")
 MODEL_PATH = os.path.join(MODEL_DIR, "titanic_model.pkl")
-
+BASELINE_PATH = os.path.join(MODEL_DIR, "baseline.json")
 
 @pytest.fixture
 def sample_data():
@@ -171,3 +173,21 @@ def test_model_reproducibility(sample_data, preprocessor):
     assert np.array_equal(
         predictions1, predictions2
     ), "モデルの予測結果に再現性がありません"
+
+def load_baseline_accuracy():
+    if os.path.exists(BASELINE_PATH):
+        with open(BASELINE_PATH) as f:
+            return json.load(f)["accuracy"]
+    return 0.75  # fallback値
+
+def test_model_accuracy_against_baseline(train_model):
+    model, X_test, y_test = train_model
+    accuracy = accuracy_score(y_test, model.predict(X_test))
+    baseline = load_baseline_accuracy()
+    assert accuracy >= baseline, f"Accuracy {accuracy:.3f} is below baseline {baseline:.3f}"
+
+def test_model_file_size():
+    """モデルファイルのサイズを確認"""
+    assert os.path.exists(MODEL_PATH), "モデルファイルが存在しません"
+    size_mb = os.path.getsize(MODEL_PATH) / (1024 * 1024)
+    assert size_mb < 10, f"モデルが大きすぎます（{size_mb:.2f}MB）"

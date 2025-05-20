@@ -178,7 +178,7 @@ def load_baseline_accuracy():
     if os.path.exists(BASELINE_PATH):
         with open(BASELINE_PATH) as f:
             return json.load(f)["accuracy"]
-    return 0.75  # fallback値
+    return 0.75  # fallback value
 
 def test_model_accuracy_against_baseline(train_model):
     model, X_test, y_test = train_model
